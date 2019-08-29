@@ -4,6 +4,7 @@ from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine, func
 import datetime as dt
+from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from flask import Flask, jsonify
 
@@ -111,9 +112,11 @@ def tobs():
 
 @app.route("/api/v1.0/<start_date>")
 def start_stats(start_date):
+    start_date=datetime.strptime(start_date, '%Y-%m-%d')
     #Return a json list of the minimum temperature, the average temperature, and the
     #max temperature for a given start date
     # Query all the stations and for the given date. 
+    session = Session(engine)
     minimum = session.query(Measurement.tobs, func.min(Measurement.tobs)).filter(Measurement.date >= start_date)
     maximum = session.query(Measurement.tobs, func.max(Measurement.tobs)).filter(Measurement.date >= start_date)
     average = session.query(Measurement.tobs, func.avg(Measurement.tobs)).filter(Measurement.date >= start_date)
@@ -126,7 +129,10 @@ def start_stats(start_date):
 
 @app.route("/api/v1.0/<start_date>&<end_date>")
 def start(start_date, end_date):
+    start_date=datetime.strptime(start_date, '%Y-%m-%d')
+    end_date=datetime.strptime(end_date, '%Y-%m-%d')
     #When given the start only, calculate TMIN, TAVG, and TMAX for all dates greater than and equal to the start date."
+    session = Session(engine)
     minimum = session.query(Measurement.tobs, func.min(Measurement.tobs)).filter(Measurement.date.between(start_date, end_date))
     maximum = session.query(Measurement.tobs, func.max(Measurement.tobs)).filter(Measurement.date.between(start_date, end_date))
     average = session.query(Measurement.tobs, func.avg(Measurement.tobs)).filter(Measurement.date.between(start_date, end_date))
